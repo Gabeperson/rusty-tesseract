@@ -83,6 +83,13 @@ fn show_command(command: &Command) {
     );
 }
 
+pub fn image_to_string_with_path<P: Into<PathBuf>>(image: &Image, args: &Args, path: P) -> TessResult<String> {
+    let mut command = create_tesseract_command_with_path(image, args, path)?;
+    let output = run_tesseract_command(&mut command)?;
+
+    Ok(output)
+}
+
 pub fn image_to_string(image: &Image, args: &Args) -> TessResult<String> {
     let mut command = create_tesseract_command(image, args)?;
     let output = run_tesseract_command(&mut command)?;
