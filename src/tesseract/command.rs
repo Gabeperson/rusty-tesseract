@@ -1,4 +1,5 @@
 use super::*;
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::string::ToString;
 
@@ -17,6 +18,10 @@ pub(crate) fn get_tesseract_command() -> Command {
         "tesseract"
     };
 
+    Command::new(tesseract)
+}
+
+pub(crate) fn get_tesseract_command_path(tesseract: PathBuf) -> Command {
     Command::new(tesseract)
 }
 
@@ -87,6 +92,33 @@ pub fn image_to_string(image: &Image, args: &Args) -> TessResult<String> {
 
 pub(crate) fn create_tesseract_command(image: &Image, args: &Args) -> TessResult<Command> {
     let mut command = get_tesseract_command();
+    command
+        .arg(image.get_image_path()?)
+        .arg("stdout")
+        .arg("-l")
+        .arg(args.lang.clone());
+
+    if let Some(dpi) = args.dpi {
+        command.arg("--dpi").arg(dpi.to_string());
+    }
+
+    if let Some(psm) = args.psm {
+        command.arg("--psm").arg(psm.to_string());
+    }
+
+    if let Some(oem) = args.oem {
+        command.arg("--oem").arg(oem.to_string());
+    }
+
+    if let Some(parameter) = args.get_config_variable_args() {
+        command.arg("-c").arg(parameter);
+    }
+
+    Ok(command)
+}
+
+pub(crate) fn create_tesseract_command_with_path<P: Into<PathBuf>>(image: &Image, args: &Args, path: P) -> TessResult<Command> {
+    let mut command = get_tesseract_command_path(path.into());
     command
         .arg(image.get_image_path()?)
         .arg("stdout")

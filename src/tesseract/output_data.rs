@@ -1,5 +1,6 @@
 use super::*;
 use core::fmt;
+use std::path::PathBuf;
 
 #[derive(Debug, PartialEq)]
 pub struct DataOutput {
@@ -89,6 +90,18 @@ fn string_to_data(output: &str) -> TessResult<Vec<Data>> {
         .map(|line| Data::parse(line.into()))
         .collect::<_>()
 }
+
+pub fn image_to_data_with_path<P: Into<PathBuf>>(image: &Image, args: &Args, tesseract_path: P) -> TessResult<DataOutput> {
+    let mut command = create_tesseract_command_with_path(image, args, tesseract_path)?;
+    command.arg("tsv");
+
+    let output = run_tesseract_command(&mut command)?;
+
+    let data = string_to_data(&output)?;
+
+    Ok(DataOutput { output, data })
+}
+
 
 #[cfg(test)]
 mod tests {
